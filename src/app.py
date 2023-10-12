@@ -50,7 +50,8 @@ def segment_face(image: np.ndarray, bbox: Any) -> np.ndarray:
     segmentation_mask = np.array()
     # this is done on SAM  
     # predictor.set_image(image) 
-    # segmentation_mask , _, _ = predictor.predict(point_coords=None, point_labels=None, box=bboxes_rescaled[None, :], multimask_output=False)
+    # masks , _, _ = predictor.predict(point_coords=None, point_labels=None, box=bboxes_rescaled[None, :], multimask_output=False)
+    # segmentation_mask = masks[0]
     return segmentation_mask
     
     
@@ -61,15 +62,16 @@ def inpaint_image(image: np.ndarray, mask: np.ndarray, prompt: str) -> np.ndarra
 def process_image(image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     annotated_image, bounding_box = detect_face(image)
     segmentation_mask = segment_face(image, bounding_box)
-    prompt = prompt_from_qr()
-    inpainted_image = inpaint_image(image, segmentation_mask, prompt)
+    #prompt = prompt_from_qr()
+    #inpainted_image = inpaint_image(image, segmentation_mask, prompt)
     
-    return annotated_image, bounding_box # replace with inpainted image
+    annotated_image = cv2.bitwise_and(image, segmentation_mask)
+    return annotated_image # replace with inpainted image
     
 
 def main():
     webcam = gr.Image(shape=(640, 480), source="webcam", mirror_webcam=True)
-    webapp = gr.interface.Interface(fn=process_image, inputs=webcam, outputs=["image", "text"])
+    webapp = gr.interface.Interface(fn=process_image, inputs=webcam, outputs="image")
     webapp.launch()
 
 
