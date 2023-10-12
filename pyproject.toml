@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "magic-hackathon"
+version = "0.1.0"
+description = ""
+authors = ["Lev <lev.udaltsov@merantix.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+opencv-python = "^4.8.1.78"
+gradio = "^3.47.1"
+matplotlib = "^3.8.0"
+mediapipe = "^0.10.7"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
