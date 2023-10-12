@@ -5,8 +5,23 @@ import cv2
 import gradio as gr
 import mediapipe as mp
 import numpy as np
+from PIL import Image
 
-from sam_predict import image_to_base64, predict_custom_trained_model_sample
+from sam_predict import predict_custom_trained_model_sample
+
+WIDTH, HEIGHT = 640, 480
+
+
+def filter_masks_by_bbox(masks: np.ndarray, bbox: List) -> np.ndarray:
+    """BBox has format xmin_px, ymin_px, xmax_px, ymax_px.
+    Only keep masks that are completely inside bbox, and merge them.
+    """
+    xmin_px, ymin_px, xmax_px, ymax_px = bbox
+
+    # check which mask fills the bbox the most
+    top_mask = max(masks, key=lambda mask: mask[xmin_px:xmax_px, ymin_px:ymax_px].sum())
+
+    return top_mask
 
 
 def segment(image) -> np.ndarray:
@@ -51,13 +66,22 @@ def segment_face(image: np.ndarray, bbox: Any) -> np.ndarray:
         xmin + bbox.width, ymin + bbox.height, image_height, image_width
     )
 
-    bbox = np.array(xmin_px, ymin_px, xmax_px, ymax_px)
+    bbox = [xmin_px, ymin_px, xmax_px, ymax_px]
 
-    segmentation_mask = np.array()
+    segmentation_masks = predict_custom_trained_model_sample(
+        project="241497474105",
+        endpoint_id="6164623047358676992",
+        location="europe-west4",
+        img=Image.fromarray(image),
+    )
+
+    segmentation_mask = filter_masks_by_bbox(segmentation_masks, bbox)
+
     # this is done on SAM
     # predictor.set_image(image)
     # masks , _, _ = predictor.predict(point_coords=None, point_labels=None, box=bboxes_rescaled[None, :], multimask_output=False)
     # segmentation_mask = masks[0]
+
     return segmentation_mask
 
 
@@ -67,17 +91,19 @@ def inpaint_image(image: np.ndarray, mask: np.ndarray, prompt: str) -> np.ndarra
 
 
 def process_image(image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    annotated_image, bounding_box = detect_face(image)
+    annotated_image, bounding_box = segment(image)
     segmentation_mask = segment_face(image, bounding_box)
     # prompt = prompt_from_qr()
     # inpainted_image = inpaint_image(image, segmentation_mask, prompt)
 
-    annotated_image = cv2.bitwise_and(image, segmentation_mask)
+    # annotated_image = cv2.bitwise_and(image, segmentation_mask)
+    annotated_image = image.copy()
+    annotated_image[~segmentation_mask.astype(bool)] = 0
     return annotated_image  # replace with inpainted image
 
 
 def main():
-    webcam = gr.Image(shape=(640, 480), source="webcam", mirror_webcam=True)
+    webcam = gr.Image(shape=(WIDTH, HEIGHT), source="webcam", mirror_webcam=True)
     webapp = gr.interface.Interface(fn=process_image, inputs=webcam, outputs="image")
     webapp.launch()
 

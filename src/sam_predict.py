@@ -44,7 +44,7 @@ def decode_rle_masks(pred_masks_rle):
 def predict_custom_trained_model_sample(
     project: str,
     endpoint_id: str,
-    instances: Union[Dict, List[Dict]],
+    img: Image,
     location: str = "europe-west4",
     api_endpoint: str = "europe-west4-aiplatform.googleapis.com",
 ):
@@ -52,6 +52,7 @@ def predict_custom_trained_model_sample(
     `instances` can be either single instance of type dict or a list
     of instances.
     """
+    instances = {"image": image_to_base64(img)}
     # The AI Platform services require regional API endpoints.
     client_options = {"api_endpoint": api_endpoint}
     # Initialize client that will be used to create and send requests.
@@ -64,13 +65,10 @@ def predict_custom_trained_model_sample(
     parameters = json_format.ParseDict(parameters_dict, Value())
     endpoint = client.endpoint_path(project=project, location=location, endpoint=endpoint_id)
     response = client.predict(endpoint=endpoint, instances=instances, parameters=parameters)
-    print("response")
-    print(" deployed_model_id:", response.deployed_model_id)
     # The predictions are a google.protobuf.Value representation of the model's predictions.
-    predictions = response.predictions
-    for prediction in predictions:
-        print(" prediction:", dict(prediction))
-    return predictions
+    predictions = dict(response.predictions[0])["masks_rle"]
+    masks = decode_rle_masks(predictions)
+    return masks
 
 
 # [END aiplatform_predict_custom_trained_model_sample]
