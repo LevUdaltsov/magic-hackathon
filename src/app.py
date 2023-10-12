@@ -24,7 +24,7 @@ def filter_masks_by_bbox(masks: np.ndarray, bbox: List) -> np.ndarray:
     return top_mask
 
 
-def segment(image) -> np.ndarray:
+def detect_face(image) -> np.ndarray:
     mp_face_detection = mp.solutions.face_detection
     mp_drawing = mp.solutions.drawing_utils
 
@@ -91,7 +91,7 @@ def inpaint_image(image: np.ndarray, mask: np.ndarray, prompt: str) -> np.ndarra
 
 
 def process_image(image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    annotated_image, bounding_box = segment(image)
+    annotated_image, bounding_box = detect_face(image)
     segmentation_mask = segment_face(image, bounding_box)
     # prompt = prompt_from_qr()
     # inpainted_image = inpaint_image(image, segmentation_mask, prompt)
