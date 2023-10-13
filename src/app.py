@@ -1,4 +1,5 @@
 import math
+import random
 from typing import Any, List, Tuple
 
 import cv2
@@ -10,7 +11,7 @@ import numpy as np
 from qreader import QReader
 
 from api_utils import predict_inpaint, predict_pix2pix, predict_sam
-from prompts import PROMPTS
+from prompts import CARD_INFO, PROMPTS, QR_MAPPING
 
 WIDTH, HEIGHT = 640, 640
 
@@ -97,17 +98,20 @@ def inpaint_image(image: np.ndarray, mask: np.ndarray, prompt: str) -> np.ndarra
 
 def process_image(image: np.ndarray, supplied_prompt: str, contract_pixels: int) -> Tuple[np.ndarray, np.ndarray]:
     qr_data = qrr.detect_and_decode(image)
+    card_info = None
     if not qr_data or len(qr_data) == 0:
         # display and error and ask user to submit another image
         gr.Warning("No QR code detected. Using the supplied prompt")
         prompt = supplied_prompt
     else:
-        qr_data = qr_data[0]
-        gr.Text(f"Scanned QR code: {qr_data}")
-        prompt = PROMPTS.get(qr_data, None)
-        if prompt is None:
+        try:
+            qr_data = qr_data[0].lower()
+            qr_data = QR_MAPPING[qr_data]
+        except:
             gr.Warning(f"QR code '{qr_data}' not recognized. Using the supplied prompt")
             prompt = supplied_prompt
+        card_info = CARD_INFO.get(qr_data, "Card not available")
+        prompt = random.choice(PROMPTS.get(qr_data, [supplied_prompt]))
 
     _, bounding_box = detect_face(image)
 
@@ -115,9 +119,13 @@ def process_image(image: np.ndarray, supplied_prompt: str, contract_pixels: int)
 
     segmentation_mask = contract_mask(segmentation_mask * 255, contract_pixels)
 
+    print("===========")
+    print("CARD:", qr_data)
+    print("PROMPT:", prompt)
+    print("===========")
     inpainted_image = inpaint_image(image, segmentation_mask, prompt)
 
-    return inpainted_image
+    return inpainted_image, card_info
 
 
 def main():
@@ -126,7 +134,9 @@ def main():
     contract_pixels = gr.Slider(minimum=0, maximum=50, step=1, value=10, label="Blend (pixels)")
     # webapp = gr.interface.Interface(fn=process_image, inputs=webcam, outputs="image")
     webapp = gr.interface.Interface(
-        fn=process_image, inputs=[webcam, supplied_prompt, contract_pixels], outputs="image"
+        fn=process_image,
+        inputs=[webcam, supplied_prompt, contract_pixels],
+        outputs=[gr.Image(label="Mirror"), gr.TextArea(label="Card info")],
     )
     webapp.queue().launch()
 
