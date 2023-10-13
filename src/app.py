@@ -6,9 +6,33 @@ import gradio as gr
 import mediapipe as mp
 import numpy as np
 
-from api_utils import predict_inpaint, predict_sam
+from api_utils import predict_inpaint, predict_pix2pix, predict_sam
 
-WIDTH, HEIGHT = 640, 480
+WIDTH, HEIGHT = 640, 860
+
+
+def pad_image(input_image):
+    np.save("input_image.npy", input_image)
+    # Determine the original height and width of the input image
+    original_height, original_width = input_image.shape[:2]
+
+    # Calculate the padding values needed to make the image square
+    pad_width = abs(original_height - original_width) // 2
+
+    # Create a new image with a square shape and fill with zeros
+    if len(input_image.shape) == 2:
+        input_image = np.expand_dims(input_image, axis=-1)
+    c = input_image.shape[-1]
+    if original_height > original_width:
+        padded_image = np.ones((original_height, original_height, c), dtype=input_image.dtype) * 127
+        padded_image[:, pad_width : pad_width + original_width, :] = input_image
+    else:
+        padded_image = np.ones((original_width, original_width, c), dtype=input_image.dtype) * 127
+        padded_image[pad_width : pad_width + original_height, :, :] = input_image
+
+    padded_image = np.squeeze(padded_image)
+
+    return padded_image
 
 
 def filter_masks_by_bbox(masks: np.ndarray, bbox: List) -> np.ndarray:
@@ -80,20 +104,26 @@ def segment_face(image: np.ndarray, bbox: Any) -> np.ndarray:
     # masks , _, _ = predictor.predict(point_coords=None, point_labels=None, box=bboxes_rescaled[None, :], multimask_output=False)
     # segmentation_mask = masks[0]
 
+    # flip the mask (to inpaint the background)
+    segmentation_mask = 1 - segmentation_mask
+
     return segmentation_mask
 
 
 def inpaint_image(image: np.ndarray, mask: np.ndarray, prompt: str) -> np.ndarray:
     # this is done with stable diffusion inpainting
-    res = predict_inpaint(image, prompt)
+    # square pad image and mask
+    image = pad_image(image)
+    mask = pad_image(mask)
+    res = predict_inpaint(image, mask * 255, prompt)
+    res = np.array(res)
     return res
 
 
 def process_image(image: np.ndarray, prompt: str) -> Tuple[np.ndarray, np.ndarray]:
-    # annotated_image, bounding_box = detect_face(image)
+    annotated_image, bounding_box = detect_face(image)
 
-    # segmentation_mask = segment_face(image, bounding_box)
-    segmentation_mask = None
+    segmentation_mask = segment_face(image, bounding_box)
 
     # TODO
     # prompt = prompt_from_qr()

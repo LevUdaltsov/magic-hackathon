@@ -15,6 +15,7 @@
 import base64
 from io import BytesIO
 
+import cv2
 import numpy as np
 import pycocotools.mask as mask_util
 from google.cloud import aiplatform
@@ -24,8 +25,8 @@ from PIL import Image
 
 PROJECT = "241497474105"
 SAM_ENDPOINT_ID = "6164623047358676992"
-INPAINT_ENDPOINT_ID = "1192649058741649408"  # instruct pix2pix
-# INPAINT_ENDPOINT_ID = "4064819721097183232"  # stable-diffusion-xl-refiner
+PIX2PIX_ENDPOINT_ID = "1192649058741649408"  # instruct pix2pix
+INPAINT_ENDPOINT_ID = "8808236028625158144"  # sd-inpaint
 
 
 def image_to_base64(image):
@@ -88,17 +89,30 @@ def predict_sam(
     return decode_rle_masks(prediction)
 
 
-def predict_inpaint(
+def predict_pix2pix(
     img: Image,
     prompt: str,
 ):
     img = ensure_pil_image(img)
     instance = {
-        "image": image_to_base64(img),
         "prompt": prompt,
-        # "num_inference_steps": 10,
-        # "guidance_scale": 8.0,
-        # "image_guidance_scale": 1.5,
+        "image": image_to_base64(img),
+    }
+    prediction = predict(instance, PIX2PIX_ENDPOINT_ID)
+    return base64_to_image(prediction)
+
+
+def predict_inpaint(
+    img: Image,
+    mask: Image,
+    prompt: str,
+):
+    img = ensure_pil_image(img)
+    mask = ensure_pil_image(mask)
+    instance = {
+        "prompt": prompt,
+        "image": image_to_base64(img),
+        "mask_image": image_to_base64(mask),
     }
     prediction = predict(instance, INPAINT_ENDPOINT_ID)
     return base64_to_image(prediction)
