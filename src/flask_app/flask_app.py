@@ -46,11 +46,11 @@ def submit():
     if captured_frame:
         ret, frame = cap.read()
         if ret:
-            processed_image = process_image(Image.fromarray(frame))
+            processed_image, text = process_image(frame, contract_pixels=15)
             ret, buffer = cv2.imencode(".jpg", processed_image)
             if ret:
                 captured_frame = base64.b64encode(buffer).decode("utf-8")
-                return render_template("result.html", img_base64=captured_frame)
+                return render_template("result.html", img_base64=captured_frame, text=text)
     return redirect(url_for("index"))
 
 

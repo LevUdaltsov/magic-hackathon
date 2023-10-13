@@ -1,6 +1,6 @@
 import math
 import random
-from typing import Any, List, Tuple
+from typing import Any, List, Tuple, Optional
 
 import cv2
 import mediapipe as mp
@@ -94,13 +94,17 @@ def inpaint_image(image: np.ndarray, mask: np.ndarray, prompt: str) -> np.ndarra
     return res
 
 
-def process_image(image: np.ndarray, supplied_prompt: str, contract_pixels: int) -> Tuple[np.ndarray, np.ndarray]:
+def process_image(image: np.ndarray,
+                  contract_pixels: int,
+                  supplied_prompt: Optional[str] = "detailed fractal tectonic landscape, in a vast wildflower garden landscape that meets the ocean, by glenn small, by albert bierstadt, photorealism, hyper realism, octane render, unreal engine, volumetric light, depth of field, volumetric clouds, god rays, lens flares, detailed, intricate, twin motion, megascan, high resolution, realistic render",
+                  ) -> Tuple[np.ndarray, np.ndarray]:
     qr_data = qrr.detect_and_decode(image)
     card_info = None
     if not qr_data or len(qr_data) == 0:
         # display and error and ask user to submit another image
         print("No QR code detected. Using the supplied prompt")
-        prompt = supplied_prompt
+        prompt = random.choice(PROMPTS.get(qr_data, [supplied_prompt]))
+        qr_data = "world"
     else:
         try:
             qr_data = qr_data[0].lower()
@@ -108,8 +112,9 @@ def process_image(image: np.ndarray, supplied_prompt: str, contract_pixels: int)
         except:
             print(f"QR code '{qr_data}' not recognized. Using the supplied prompt")
             prompt = supplied_prompt
-        card_info = CARD_INFO.get(qr_data, "Card not available")
-        prompt = random.choice(PROMPTS.get(qr_data, [supplied_prompt]))
+
+    card_info = CARD_INFO.get(qr_data, "Card not available")
+    prompt = random.choice(PROMPTS.get(qr_data, [supplied_prompt]))
 
     _, bounding_box = detect_face(image)
 
