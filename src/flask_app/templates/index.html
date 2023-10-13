@@ -4,6 +4,10 @@
     <title>Webcam Capture</title>
     <style>
         body {
+            background-image: url('../static/bg4.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -17,12 +21,22 @@
             flex-direction: column;
         }
         #video-container {
-            width: 70%; /* Adjust the width of the video frame */
+            /*width: 70%; !* Adjust the width of the video frame *!*/
+            overflow: hidden; /* Hide overflow content */
+            position: absolute;
+            top: 30%;
+        }
+        .content-container {
+            width: 200%; /* Expand content to cover overflowed area */
+            margin-left: -40%; /* Hide 10% on the left */
+            margin-right: -40%; /* Hide 10% on the right */
         }
         #buttons-container {
             width: 30%;
             display: flex;
             flex-direction: row;
+            position: absolute;
+            top: 80%;
             align-items: flex-end;
         }
         .button {
@@ -31,16 +45,19 @@
     </style>
 </head>
 <body>
-    <h1>Magic Mirror</h1>
     <div id="container">
-        <div id="video-container",>
-            {% if img_base64 %}
-            <img width="100%" height="auto" src="data:image/jpeg;base64,{{ img_base64 }}" alt="Captured Image">
-            {% endif %}
-            {% if not img_base64 %}
-            <video id="video" width="100%" height="auto" autoplay {% if not capture_triggered %}style="display: block;"{% endif %}></video>
-            {% endif %}
-        </div>
+        <div id="video-container">
+    {% if img_base64 %}
+    <div class="content-container">
+        <img width="100%" height="auto" src="data:image/jpeg;base64,{{ img_base64 }}" alt="Captured Image">
+    </div>
+    {% endif %}
+    {% if not img_base64 %}
+    <div class="content-container">
+        <video id="video" width="100%" height="auto" autoplay {% if not capture_triggered %}style="display: block;"{% endif %}></video>
+    </div>
+    {% endif %}
+</div>
         <div id="buttons-container">
             <form action="/capture" method="post">
                 <input type="submit" class="button" value="Capture">

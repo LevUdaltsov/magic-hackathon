@@ -1,13 +1,69 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Image Processing Result</title>
+    <style>
+        body {
+            background-image: url('../static/bg4.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #container {
+            display: flex;
+            justify-content: space-between; /* Adjust to distribute space evenly */
+            align-items: center;
+            width: 80%;
+            margin: 0 auto;
+            flex-direction: column;
+        }
+        #video-container {
+            /*width: 70%; !* Adjust the width of the video frame *!*/
+            overflow: hidden; /* Hide overflow content */
+            /*top: 30%;*/
+        }
+        .content-container {
+            overflow: hidden; /* Hide overflow content */
+            position: relative;
+            /*top: 30%; */
+            width: 200%; /* Expand content to cover overflowed area */
+            margin-left: -40%; /* Hide 10% on the left */
+            margin-right: -40%; /* Hide 10% on the right */
+        }
+
+        /*.overlap {*/
+        /*    position: absolute;*/
+        /*    top: 0;*/
+        /*    left: 0;*/
+        /*    width: 100%;*/
+        /*    height: auto;*/
+        /*}*/
+
+
+        /*.front {*/
+        /*    position: absolute;*/
+        /*    z-index: 2; !* On top of the backdrop image *!*/
+        /*}*/
+    </style>
 </head>
 <body>
-    <h1>Image Processing Result</h1>
-    {% if img_base64 %}
-    <img src="data:image/jpeg;base64,{{ img_base64 }}" alt="Processed Image">
-    <p>Image has been processed.</p>
+<div id="container">
+                {% if img_base64 %}
+        <div id="video-container">
+            <div class="content-container">
+
+            <img width="100%" height="auto" src="data:image/jpeg;base64,{{ img_base64 }}" alt="Processed Image">
+
+            </div>
+
+
+<!--            <img class="overlap front" width="100%" height="auto" src="../static/final_frame.png" alt="Processed Image">-->
+
     {% endif %}
+        </div>
+
+</div>
 </body>
 </html>
