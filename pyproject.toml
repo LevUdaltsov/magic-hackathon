@@ -11,6 +11,7 @@ opencv-python = "^4.8.1.78"
 gradio = "^3.47.1"
 matplotlib = "^3.8.0"
 mediapipe = "^0.10.7"
+flask = "^3.0.0"
 
 
 [build-system]

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Webcam Capture</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #container {
+            display: flex;
+            justify-content: space-between; /* Adjust to distribute space evenly */
+            align-items: center;
+            width: 80%;
+            margin: 0 auto;
+            flex-direction: column;
+        }
+        #video-container {
+            width: 70%; /* Adjust the width of the video frame */
+        }
+        #buttons-container {
+            width: 30%;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-end;
+        }
+        .button {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Magic Mirror</h1>
+    <div id="container">
+        <div id="video-container",>
+            {% if img_base64 %}
+            <img width="100%" height="auto" src="data:image/jpeg;base64,{{ img_base64 }}" alt="Captured Image">
+            {% endif %}
+            {% if not img_base64 %}
+            <video id="video" width="100%" height="auto" autoplay {% if not capture_triggered %}style="display: block;"{% endif %}></video>
+            {% endif %}
+        </div>
+        <div id="buttons-container">
+            <form action="/capture" method="post">
+                <input type="submit" class="button" value="Capture">
+            </form>
+            {% if capture_triggered %}
+            <form action="/submit" method="post">
+                <input type="submit" class="button" value="Submit">
+            </form>
+            <form action="/clear" method="post">
+                <input type="submit" class="button" value="Clear">
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // JavaScript code to access and display the webcam stream
+        if (navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function (stream) {
+                var video = document.getElementById('video');
+                video.srcObject = stream;
+            })
+            .catch(function (error) {
+                console.log("Error accessing webcam: " + error);
+            });
+        } else {
+            alert('Your browser does not support getUserMedia API.');
+        }
+    </script>
+</body>
+</html>
