@@ -131,7 +131,7 @@ def process_image(image: np.ndarray, supplied_prompt: str, contract_pixels: int)
 def main():
     webcam = gr.Image(shape=(WIDTH, HEIGHT), source="webcam", mirror_webcam=True)
     supplied_prompt = gr.Textbox(lines=2, label="Prompt")
-    contract_pixels = gr.Slider(minimum=0, maximum=50, step=1, value=10, label="Blend (pixels)")
+    contract_pixels = gr.Slider(minimum=0, maximum=50, step=1, value=15, label="Blend (pixels)")
     # webapp = gr.interface.Interface(fn=process_image, inputs=webcam, outputs="image")
     webapp = gr.interface.Interface(
         fn=process_image,
