@@ -125,6 +125,9 @@ def process_image(image: np.ndarray, supplied_prompt: str, contract_pixels: int)
     print("===========")
     inpainted_image = inpaint_image(image, segmentation_mask, prompt)
 
+    if card_info:
+        card_info = f"## {qr_data.capitalize()}\n{card_info}"
+
     return inpainted_image, card_info
 
 
@@ -136,7 +139,7 @@ def main():
     webapp = gr.interface.Interface(
         fn=process_image,
         inputs=[webcam, supplied_prompt, contract_pixels],
-        outputs=[gr.Image(label="Mirror"), gr.TextArea(label="Card info")],
+        outputs=[gr.Image(label="Mirror"), gr.Markdown(label="Card info")],
     )
     webapp.queue().launch()
 
