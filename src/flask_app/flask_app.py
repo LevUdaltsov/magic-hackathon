@@ -1,7 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for
+import base64
+
 import cv2
 import numpy as np
-import base64
+from app import *
+from flask import Flask, redirect, render_template, request, url_for
+from PIL import Image
 
 app = Flask(__name__)
 
@@ -12,46 +15,52 @@ cap = cv2.VideoCapture(0)
 captured_frame = None
 capture_triggered = False
 
-@app.route('/')
-def index():
-    return render_template('index.html', img_base64=captured_frame, capture_triggered=capture_triggered)
 
-@app.route('/capture', methods=['POST'])
+@app.route("/")
+def index():
+    return render_template("index.html", img_base64=captured_frame, capture_triggered=capture_triggered)
+
+
+@app.route("/capture", methods=["POST"])
 def capture():
     global captured_frame, capture_triggered
     ret, frame = cap.read()
     if ret:
         # Convert the captured frame to base64 for displaying in HTML
-        ret, buffer = cv2.imencode('.jpg', frame)
+        ret, buffer = cv2.imencode(".jpg", frame)
         if ret:
-            captured_frame = base64.b64encode(buffer).decode('utf-8')
+            captured_frame = base64.b64encode(buffer).decode("utf-8")
             capture_triggered = True
-    return redirect(url_for('index'))
+    return redirect(url_for("index"))
+
 
 def custom_image_processing(image):
     # Replace this with your image processing logic
     # Here we simply invert the image
     return cv2.bitwise_not(image)
 
-@app.route('/submit', methods=['POST'])
+
+@app.route("/submit", methods=["POST"])
 def submit():
     global captured_frame
     if captured_frame:
         ret, frame = cap.read()
         if ret:
-            processed_image = custom_image_processing(frame)
-            ret, buffer = cv2.imencode('.jpg', processed_image)
+            processed_image = process_image(Image.fromarray(frame))
+            ret, buffer = cv2.imencode(".jpg", processed_image)
             if ret:
-                captured_frame = base64.b64encode(buffer).decode('utf-8')
-                return render_template('result.html', img_base64=captured_frame)
-    return redirect(url_for('index'))
+                captured_frame = base64.b64encode(buffer).decode("utf-8")
+                return render_template("result.html", img_base64=captured_frame)
+    return redirect(url_for("index"))
 
-@app.route('/clear', methods=['POST'])
+
+@app.route("/clear", methods=["POST"])
 def clear():
     global captured_frame, captured
     captured_frame = None
     captured = False
-    return redirect(url_for('index'))
+    return redirect(url_for("index"))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app.run(debug=True)
