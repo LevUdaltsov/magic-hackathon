@@ -1,8 +1,8 @@
 PROMPTS = {
     # "default": ["Magic kingdom tarot, ultra high resolution, artstation"],
     "death": [
-        "landscape hellscape, d & d, fantasy, intricate, very beautiful, highly detailed, elegant, digital painting, artstation, concept art, matte, smooth and sharp focus, rpg artwork, illustration, by rene maritte and tian zi and wlop and alsphonse mucha and artgerm and and pino daeni and dan mumford",
-        "inferno prison, trapped in the ninth circle of hell cocytus, inspired by dante alighieri's divine comedy, in the style of michelangelo, renaissance artwork, trending artstation, concept art, photoshopped, 4 k high resolution, great attention to detail, award - winning art, ground - breaking, awe - inspiring",
+        "landscape hellscape, phoenix rising from pile of ashes, d & d fantasy, intricate, very beautiful, highly detailed, elegant, digital painting, artstation, concept art, matte, smooth and sharp focus, rpg artwork, illustration, by rene maritte and tian zi and wlop and alsphonse mucha and artgerm and and pino daeni and dan mumford",
+        "inferno prison, phoenix rising from ninth circle of hell cocytus, inspired by dante alighieri's divine comedy, in the style of michelangelo, renaissance artwork, trending artstation, concept art, photoshopped, 4 k high resolution, great attention to detail, award - winning art, ground - breaking, awe - inspiring",
     ],
     "sun": [
         "Fantasy Magical fairy-tale glowing stone portal in the forest. Round stone portal teleport in trees to other worlds. Fantastic landscape. Magic Altar in the fores, highly detailed, digital painting, artstation, concept art, smooth, sharp focus, illustration, art by greg rutkowski and alphonse mucha",
