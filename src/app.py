@@ -89,14 +89,14 @@ def inpaint_image(image: np.ndarray, mask: np.ndarray, prompt: str) -> np.ndarra
     return res
 
 
-def process_image(image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+def process_image(image: np.ndarray, prompt: str) -> Tuple[np.ndarray, np.ndarray]:
     # annotated_image, bounding_box = detect_face(image)
 
     # segmentation_mask = segment_face(image, bounding_box)
     segmentation_mask = None
 
     # TODO
-    prompt = prompt_from_qr()
+    # prompt = prompt_from_qr()
 
     inpainted_image = inpaint_image(image, segmentation_mask, prompt)
 
@@ -105,7 +105,9 @@ def process_image(image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
 
 def main():
     webcam = gr.Image(shape=(WIDTH, HEIGHT), source="webcam", mirror_webcam=True)
-    webapp = gr.interface.Interface(fn=process_image, inputs=webcam, outputs="image")
+    prompt = gr.Textbox(lines=2, label="Prompt")
+    # webapp = gr.interface.Interface(fn=process_image, inputs=webcam, outputs="image")
+    webapp = gr.interface.Interface(fn=process_image, inputs=[webcam, prompt], outputs="image")
     webapp.launch()
 
 
