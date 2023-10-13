@@ -11,7 +11,9 @@ opencv-python = "^4.8.1.78"
 gradio = "^3.47.1"
 matplotlib = "^3.8.0"
 mediapipe = "^0.10.7"
-
+google-cloud-aiplatform = "^1.35"
+pycocotools = "^2.0.6"
+numpy = "^1.25"
 
 [build-system]
 requires = ["poetry-core"]
