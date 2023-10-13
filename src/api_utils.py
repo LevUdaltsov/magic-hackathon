@@ -14,15 +14,18 @@
 
 import base64
 from io import BytesIO
-from typing import Dict, List, Union
 
 import numpy as np
 import pycocotools.mask as mask_util
-import requests
 from google.cloud import aiplatform
 from google.protobuf import json_format
 from google.protobuf.struct_pb2 import Value
 from PIL import Image
+
+PROJECT = "241497474105"
+SAM_ENDPOINT_ID = "6164623047358676992"
+INPAINT_ENDPOINT_ID = "1192649058741649408"  # instruct pix2pix
+# INPAINT_ENDPOINT_ID = "4064819721097183232"  # stable-diffusion-xl-refiner
 
 
 def image_to_base64(image):
@@ -41,10 +44,16 @@ def decode_rle_masks(pred_masks_rle):
     return np.stack([mask_util.decode(rle) for rle in pred_masks_rle])
 
 
-def predict_custom_trained_model_sample(
-    project: str,
+def ensure_pil_image(image):
+    if not isinstance(image, Image.Image):
+        image = Image.fromarray(image)
+    return image
+
+
+def predict(
+    instances: dict,
     endpoint_id: str,
-    img: Image,
+    project: str = PROJECT,
     location: str = "europe-west4",
     api_endpoint: str = "europe-west4-aiplatform.googleapis.com",
 ):
@@ -52,7 +61,6 @@ def predict_custom_trained_model_sample(
     `instances` can be either single instance of type dict or a list
     of instances.
     """
-    instances = {"image": image_to_base64(img)}
     # The AI Platform services require regional API endpoints.
     client_options = {"api_endpoint": api_endpoint}
     # Initialize client that will be used to create and send requests.
@@ -66,9 +74,34 @@ def predict_custom_trained_model_sample(
     endpoint = client.endpoint_path(project=project, location=location, endpoint=endpoint_id)
     response = client.predict(endpoint=endpoint, instances=instances, parameters=parameters)
     # The predictions are a google.protobuf.Value representation of the model's predictions.
-    predictions = dict(response.predictions[0])["masks_rle"]
-    masks = decode_rle_masks(predictions)
-    return masks
+    prediction = response.predictions[0]
+    return prediction
+
+
+def predict_sam(
+    img: Image,
+):
+    img = ensure_pil_image(img)
+    instance = {"image": image_to_base64(img)}
+    prediction = predict(instance, SAM_ENDPOINT_ID)
+    prediction = dict(prediction)["masks_rle"]
+    return decode_rle_masks(prediction)
+
+
+def predict_inpaint(
+    img: Image,
+    prompt: str,
+):
+    img = ensure_pil_image(img)
+    instance = {
+        "image": image_to_base64(img),
+        "prompt": prompt,
+        # "num_inference_steps": 10,
+        # "guidance_scale": 8.0,
+        # "image_guidance_scale": 1.5,
+    }
+    prediction = predict(instance, INPAINT_ENDPOINT_ID)
+    return base64_to_image(prediction)
 
 
 # [END aiplatform_predict_custom_trained_model_sample]

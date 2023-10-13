@@ -5,9 +5,8 @@ import cv2
 import gradio as gr
 import mediapipe as mp
 import numpy as np
-from PIL import Image
 
-from sam_predict import predict_custom_trained_model_sample
+from api_utils import predict_inpaint, predict_sam
 
 WIDTH, HEIGHT = 640, 480
 
@@ -43,7 +42,9 @@ def detect_face(image) -> np.ndarray:
 
 
 def prompt_from_qr() -> str:
-    prompt = ""
+    # prompt = "medieval fantasy painting of a wizard in a forest, artstation, ultra high resolution"
+    prompt = "turn the person into a medieval fantasy painting character"
+    # prompt = "give the person a mustache"
     return prompt
 
 
@@ -68,11 +69,8 @@ def segment_face(image: np.ndarray, bbox: Any) -> np.ndarray:
 
     bbox = [xmin_px, ymin_px, xmax_px, ymax_px]
 
-    segmentation_masks = predict_custom_trained_model_sample(
-        project="241497474105",
-        endpoint_id="6164623047358676992",
-        location="europe-west4",
-        img=Image.fromarray(image),
+    segmentation_masks = predict_sam(
+        img=image,
     )
 
     segmentation_mask = filter_masks_by_bbox(segmentation_masks, bbox)
@@ -87,19 +85,22 @@ def segment_face(image: np.ndarray, bbox: Any) -> np.ndarray:
 
 def inpaint_image(image: np.ndarray, mask: np.ndarray, prompt: str) -> np.ndarray:
     # this is done with stable diffusion inpainting
-    return image
+    res = predict_inpaint(image, prompt)
+    return res
 
 
 def process_image(image: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    annotated_image, bounding_box = detect_face(image)
-    segmentation_mask = segment_face(image, bounding_box)
-    # prompt = prompt_from_qr()
-    # inpainted_image = inpaint_image(image, segmentation_mask, prompt)
+    # annotated_image, bounding_box = detect_face(image)
 
-    # annotated_image = cv2.bitwise_and(image, segmentation_mask)
-    annotated_image = image.copy()
-    annotated_image[~segmentation_mask.astype(bool)] = 0
-    return annotated_image  # replace with inpainted image
+    # segmentation_mask = segment_face(image, bounding_box)
+    segmentation_mask = None
+
+    # TODO
+    prompt = prompt_from_qr()
+
+    inpainted_image = inpaint_image(image, segmentation_mask, prompt)
+
+    return inpainted_image
 
 
 def main():
