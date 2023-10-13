@@ -141,7 +141,7 @@ def main():
         inputs=[webcam, supplied_prompt, contract_pixels],
         outputs=[gr.Image(label="Mirror"), gr.Markdown(label="Card info")],
     )
-    webapp.queue().launch()
+    webapp.queue(max_size=3).launch()
 
 
 if __name__ == "__main__":
