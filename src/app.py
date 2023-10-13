@@ -8,27 +8,33 @@ import numpy as np
 
 from api_utils import predict_inpaint, predict_pix2pix, predict_sam
 
-WIDTH, HEIGHT = 640, 860
+WIDTH, HEIGHT = 640, 640
 
 
 def pad_image(input_image):
-    np.save("input_image.npy", input_image)
     # Determine the original height and width of the input image
     original_height, original_width = input_image.shape[:2]
 
     # Calculate the padding values needed to make the image square
     pad_width = abs(original_height - original_width) // 2
 
-    # Create a new image with a square shape and fill with zeros
+    # Create a new image with a square shape and fill with mirrored edges
     if len(input_image.shape) == 2:
         input_image = np.expand_dims(input_image, axis=-1)
     c = input_image.shape[-1]
+
     if original_height > original_width:
-        padded_image = np.ones((original_height, original_height, c), dtype=input_image.dtype) * 127
-        padded_image[:, pad_width : pad_width + original_width, :] = input_image
+        # Pad width to the left and right with mirrored edges
+        left_mirror = np.flip(input_image[:, :pad_width, :], axis=1)
+        right_mirror = np.flip(input_image[:, -pad_width:, :], axis=1)
+
+        padded_image = np.concatenate((left_mirror, input_image, right_mirror), axis=1)
     else:
-        padded_image = np.ones((original_width, original_width, c), dtype=input_image.dtype) * 127
-        padded_image[pad_width : pad_width + original_height, :, :] = input_image
+        # Pad height to the top and bottom with mirrored edges
+        top_mirror = np.flip(input_image[:pad_width, :, :], axis=0)
+        bottom_mirror = np.flip(input_image[-pad_width:, :, :], axis=0)
+
+        padded_image = np.concatenate((top_mirror, input_image, bottom_mirror), axis=0)
 
     padded_image = np.squeeze(padded_image)
 
@@ -113,8 +119,8 @@ def segment_face(image: np.ndarray, bbox: Any) -> np.ndarray:
 def inpaint_image(image: np.ndarray, mask: np.ndarray, prompt: str) -> np.ndarray:
     # this is done with stable diffusion inpainting
     # square pad image and mask
-    image = pad_image(image)
-    mask = pad_image(mask)
+    # image = pad_image(image)
+    # mask = pad_image(mask)
     res = predict_inpaint(image, mask * 255, prompt)
     res = np.array(res)
     return res
