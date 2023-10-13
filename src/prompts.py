@@ -14,15 +14,18 @@ PROMPTS = {
     "magician": [
         "3 d model of an ethereal colorful blue starry fox peacock character accented in gold, wearing star filled magic imbued mage robes, wearing lots of gold jewelry and gems, set in observatory at night, art by yuji ikehata, background art by miyazaki, realism, resident evil, fully clothed, cgi, gaming",
     ],
+    "world": [
+        "detailed fractal tectonic landscape, in a vast wildflower garden landscape that meets the ocean, by glenn small, by albert bierstadt, photorealism, hyper realism, octane render, unreal engine, volumetric light, depth of field, volumetric clouds, god rays, lens flares, detailed, intricate, twin motion, megascan, high resolution, realistic render",
+    ],
 }
 
 QR_MAPPING = {
     "death": "death",
     "magician": "magician",
     "priestess": "priestess",
-    "1": "sun",
+    "1": "world",
     "3": "sun",
-    "5": "priestess",
+    "5": "sun",
 }
 
 
@@ -31,5 +34,5 @@ CARD_INFO = {
     "magician": "The Magician is interpreted with energy, potential, and the manifestation of one's desires; the card symbolizes the meetings of the physical and spiritual worlds ('as above, so below') and the conduit converting spiritual energy into real-world action.",
     "priestess": "The Priestess is a card of mystery, stillness and passivity. This card suggests that it is time to retreat and reflect upon the situation and trust your inner instincts to guide you through it. Things around you are not what they appear to be right now.",
     "sun": "The Sun portends good fortune, happiness, joy and harmony. It represents the universe coming together and agreeing with your path and aiding forward movement into something greater.",
-    "star": "The Star indicates you are likely to find yourself feeling inspired. It brings renewed hope and faith and a sense that you are truly blessed by the universe at this time.",
+    "world": "The World represents an ending to a cycle of life, a pause in life before the next big cycle beginning with the fool. It is an indicator of a major and inexorable change, of tectonic breadth.",
 }
