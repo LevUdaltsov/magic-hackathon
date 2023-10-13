@@ -1,7 +1,7 @@
 PROMPTS = {
     # "default": ["Magic kingdom tarot, ultra high resolution, artstation"],
     "death": [
-        "landscape hellscape, phoenix rising from pile of ashes, d & d fantasy, intricate, very beautiful, highly detailed, elegant, digital painting, artstation, concept art, matte, smooth and sharp focus, rpg artwork, illustration, by rene maritte and tian zi and wlop and alsphonse mucha and artgerm and and pino daeni and dan mumford",
+        "photorealistic phoenix rising from fire, landscape hellscape, d & d fantasy, intricate, very beautiful, highly detailed, elegant, digital painting, artstation, concept art, matte, smooth and sharp focus, rpg artwork, illustration, by rene maritte and tian zi and wlop and alsphonse mucha and artgerm and and pino daeni and dan mumford",
         "inferno prison, phoenix rising from ninth circle of hell cocytus, inspired by dante alighieri's divine comedy, in the style of michelangelo, renaissance artwork, trending artstation, concept art, photoshopped, 4 k high resolution, great attention to detail, award - winning art, ground - breaking, awe - inspiring",
     ],
     "sun": [
@@ -17,6 +17,9 @@ PROMPTS = {
     "world": [
         "detailed fractal tectonic landscape, in a vast wildflower garden landscape that meets the ocean, by glenn small, by albert bierstadt, photorealism, hyper realism, octane render, unreal engine, volumetric light, depth of field, volumetric clouds, god rays, lens flares, detailed, intricate, twin motion, megascan, high resolution, realistic render",
     ],
+    "scooby-do": [
+        "Scooby-do monsters, cartoon hero and villain, in the style of scooby do. Vivid colors, ultra HD, funny, darkopalypse, tiki voodoo swamp"
+    ]
 }
 
 QR_MAPPING = {
