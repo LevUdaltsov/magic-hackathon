@@ -6,10 +6,15 @@ import gradio as gr
 import mediapipe as mp
 import numpy as np
 
+# from qr import detect_qr
+from qreader import QReader
+
 from api_utils import predict_inpaint, predict_pix2pix, predict_sam
-from qr import detect_qr
+from prompts import PROMPTS
 
 WIDTH, HEIGHT = 640, 640
+
+qrr = QReader()
 
 
 def filter_masks_by_bbox(masks: np.ndarray, bbox: List) -> np.ndarray:
@@ -51,13 +56,6 @@ def detect_face(image) -> np.ndarray:
         return annotated_image, bounding_box
 
 
-def prompt_from_qr(qr_data: str) -> str:
-    # prompt = "medieval fantasy painting of a wizard in a forest, artstation, ultra high resolution"
-    prompt = "turn the person into a medieval fantasy painting character"
-    # prompt = "give the person a mustache"
-    return prompt
-
-
 def _normalized_to_pixel_coordinates(
     normalized_x: float, normalized_y: float, image_width: int, image_height: int
 ) -> Tuple[int, int]:
@@ -97,22 +95,25 @@ def inpaint_image(image: np.ndarray, mask: np.ndarray, prompt: str) -> np.ndarra
     return res
 
 
-def process_image(image: np.ndarray, prompt: str, contract_pixels: int) -> Tuple[np.ndarray, np.ndarray]:
-    qr_data = detect_qr(image)
-    if not qr_data:
+def process_image(image: np.ndarray, supplied_prompt: str, contract_pixels: int) -> Tuple[np.ndarray, np.ndarray]:
+    qr_data = qrr.detect_and_decode(image)
+    if not qr_data or len(qr_data) == 0:
         # display and error and ask user to submit another image
-        gr.Warning("No QR code detected.")
-
-    gr.Text(f"Scanned QR code: {qr_data}")
+        gr.Warning("No QR code detected. Using the supplied prompt")
+        prompt = supplied_prompt
+    else:
+        qr_data = qr_data[0]
+        gr.Text(f"Scanned QR code: {qr_data}")
+        prompt = PROMPTS.get(qr_data, None)
+        if prompt is None:
+            gr.Warning(f"QR code '{qr_data}' not recognized. Using the supplied prompt")
+            prompt = supplied_prompt
 
     _, bounding_box = detect_face(image)
 
     segmentation_mask = segment_face(image, bounding_box)
 
     segmentation_mask = contract_mask(segmentation_mask * 255, contract_pixels)
-
-    # TODO
-    # prompt = prompt_from_qr()
 
     inpainted_image = inpaint_image(image, segmentation_mask, prompt)
 
@@ -121,10 +122,12 @@ def process_image(image: np.ndarray, prompt: str, contract_pixels: int) -> Tuple
 
 def main():
     webcam = gr.Image(shape=(WIDTH, HEIGHT), source="webcam", mirror_webcam=True)
-    prompt = gr.Textbox(lines=2, label="Prompt")
-    contract_pixels = gr.Slider(minimum=0, maximum=50, step=1, value=0, label="Blend (pixels)")
+    supplied_prompt = gr.Textbox(lines=2, label="Prompt")
+    contract_pixels = gr.Slider(minimum=0, maximum=50, step=1, value=10, label="Blend (pixels)")
     # webapp = gr.interface.Interface(fn=process_image, inputs=webcam, outputs="image")
-    webapp = gr.interface.Interface(fn=process_image, inputs=[webcam, prompt, contract_pixels], outputs="image")
+    webapp = gr.interface.Interface(
+        fn=process_image, inputs=[webcam, supplied_prompt, contract_pixels], outputs="image"
+    )
     webapp.queue().launch()
 
 
