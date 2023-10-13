@@ -1,5 +1,5 @@
 PROMPTS = {
-    "default": ["Magic kingdom tarot, ultra high resolution, artstation"],
+    # "default": ["Magic kingdom tarot, ultra high resolution, artstation"],
     "death": [
         "landscape hellscape, d & d, fantasy, intricate, very beautiful, highly detailed, elegant, digital painting, artstation, concept art, matte, smooth and sharp focus, rpg artwork, illustration, by rene maritte and tian zi and wlop and alsphonse mucha and artgerm and and pino daeni and dan mumford",
         "inferno prison, trapped in the ninth circle of hell cocytus, inspired by dante alighieri's divine comedy, in the style of michelangelo, renaissance artwork, trending artstation, concept art, photoshopped, 4 k high resolution, great attention to detail, award - winning art, ground - breaking, awe - inspiring",
@@ -23,6 +23,8 @@ QR_MAPPING = {
     "death": "death",
     "magician": "magician",
     "priestess": "priestess",
+    "sun": "sun",
+    "world": "world",
     "1": "world",
     "3": "sun",
     "5": "sun",

@@ -7,15 +7,10 @@ import gradio as gr
 import mediapipe as mp
 import numpy as np
 
-# from qr import detect_qr
-from qreader import QReader
-
 from api_utils import predict_inpaint, predict_pix2pix, predict_sam
 from prompts import CARD_INFO, PROMPTS, QR_MAPPING
 
 WIDTH, HEIGHT = 640, 640
-
-qrr = QReader()
 
 
 def filter_masks_by_bbox(masks: np.ndarray, bbox: List) -> np.ndarray:
@@ -96,22 +91,9 @@ def inpaint_image(image: np.ndarray, mask: np.ndarray, prompt: str) -> np.ndarra
     return res
 
 
-def process_image(image: np.ndarray, supplied_prompt: str, contract_pixels: int) -> Tuple[np.ndarray, np.ndarray]:
-    qr_data = qrr.detect_and_decode(image)
-    card_info = None
-    if not qr_data or len(qr_data) == 0:
-        # display and error and ask user to submit another image
-        gr.Warning("No QR code detected. Using the supplied prompt")
-        prompt = supplied_prompt
-    else:
-        try:
-            qr_data = qr_data[0].lower()
-            qr_data = QR_MAPPING[qr_data]
-        except:
-            gr.Warning(f"QR code '{qr_data}' not recognized. Using the supplied prompt")
-            prompt = supplied_prompt
-        card_info = CARD_INFO.get(qr_data, "Card not available")
-        prompt = random.choice(PROMPTS.get(qr_data, [supplied_prompt]))
+def process_image(image: np.ndarray, qr_data: str, contract_pixels: int) -> Tuple[np.ndarray, np.ndarray]:
+    prompt = random.choice(PROMPTS[QR_MAPPING[qr_data]])
+    card_info = CARD_INFO[QR_MAPPING[qr_data]]
 
     _, bounding_box = detect_face(image)
 
@@ -133,7 +115,8 @@ def process_image(image: np.ndarray, supplied_prompt: str, contract_pixels: int)
 
 def main():
     webcam = gr.Image(shape=(WIDTH, HEIGHT), source="webcam", mirror_webcam=True)
-    supplied_prompt = gr.Textbox(lines=2, label="Prompt")
+    qr_datas = list(CARD_INFO.keys())
+    supplied_prompt = gr.Dropdown(qr_datas, label="Card")
     contract_pixels = gr.Slider(minimum=0, maximum=50, step=1, value=15, label="Blend (pixels)")
     # webapp = gr.interface.Interface(fn=process_image, inputs=webcam, outputs="image")
     webapp = gr.interface.Interface(
