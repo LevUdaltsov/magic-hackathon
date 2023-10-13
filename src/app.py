@@ -7,38 +7,9 @@ import mediapipe as mp
 import numpy as np
 
 from api_utils import predict_inpaint, predict_pix2pix, predict_sam
+from qr import detect_qr
 
 WIDTH, HEIGHT = 640, 640
-
-
-def pad_image(input_image):
-    # Determine the original height and width of the input image
-    original_height, original_width = input_image.shape[:2]
-
-    # Calculate the padding values needed to make the image square
-    pad_width = abs(original_height - original_width) // 2
-
-    # Create a new image with a square shape and fill with mirrored edges
-    if len(input_image.shape) == 2:
-        input_image = np.expand_dims(input_image, axis=-1)
-    c = input_image.shape[-1]
-
-    if original_height > original_width:
-        # Pad width to the left and right with mirrored edges
-        left_mirror = np.flip(input_image[:, :pad_width, :], axis=1)
-        right_mirror = np.flip(input_image[:, -pad_width:, :], axis=1)
-
-        padded_image = np.concatenate((left_mirror, input_image, right_mirror), axis=1)
-    else:
-        # Pad height to the top and bottom with mirrored edges
-        top_mirror = np.flip(input_image[:pad_width, :, :], axis=0)
-        bottom_mirror = np.flip(input_image[-pad_width:, :, :], axis=0)
-
-        padded_image = np.concatenate((top_mirror, input_image, bottom_mirror), axis=0)
-
-    padded_image = np.squeeze(padded_image)
-
-    return padded_image
 
 
 def filter_masks_by_bbox(masks: np.ndarray, bbox: List) -> np.ndarray:
@@ -51,6 +22,15 @@ def filter_masks_by_bbox(masks: np.ndarray, bbox: List) -> np.ndarray:
     top_mask = max(masks, key=lambda mask: mask[xmin_px:xmax_px, ymin_px:ymax_px].sum())
 
     return top_mask
+
+
+def contract_mask(mask: np.ndarray, contract_pixels: int) -> np.ndarray:
+    """Contract the mask by `contract_pixels` pixels in each direction."""
+    mask = mask.copy()
+
+    mask = cv2.dilate(mask, np.ones((2, 2), np.uint8), iterations=contract_pixels)
+
+    return mask
 
 
 def detect_face(image) -> np.ndarray:
@@ -71,7 +51,7 @@ def detect_face(image) -> np.ndarray:
         return annotated_image, bounding_box
 
 
-def prompt_from_qr() -> str:
+def prompt_from_qr(qr_data: str) -> str:
     # prompt = "medieval fantasy painting of a wizard in a forest, artstation, ultra high resolution"
     prompt = "turn the person into a medieval fantasy painting character"
     # prompt = "give the person a mustache"
@@ -105,11 +85,6 @@ def segment_face(image: np.ndarray, bbox: Any) -> np.ndarray:
 
     segmentation_mask = filter_masks_by_bbox(segmentation_masks, bbox)
 
-    # this is done on SAM
-    # predictor.set_image(image)
-    # masks , _, _ = predictor.predict(point_coords=None, point_labels=None, box=bboxes_rescaled[None, :], multimask_output=False)
-    # segmentation_mask = masks[0]
-
     # flip the mask (to inpaint the background)
     segmentation_mask = 1 - segmentation_mask
 
@@ -117,19 +92,24 @@ def segment_face(image: np.ndarray, bbox: Any) -> np.ndarray:
 
 
 def inpaint_image(image: np.ndarray, mask: np.ndarray, prompt: str) -> np.ndarray:
-    # this is done with stable diffusion inpainting
-    # square pad image and mask
-    # image = pad_image(image)
-    # mask = pad_image(mask)
-    res = predict_inpaint(image, mask * 255, prompt)
+    res = predict_inpaint(image, mask, prompt)
     res = np.array(res)
     return res
 
 
-def process_image(image: np.ndarray, prompt: str) -> Tuple[np.ndarray, np.ndarray]:
-    annotated_image, bounding_box = detect_face(image)
+def process_image(image: np.ndarray, prompt: str, contract_pixels: int) -> Tuple[np.ndarray, np.ndarray]:
+    qr_data = detect_qr(image)
+    if not qr_data:
+        # display and error and ask user to submit another image
+        gr.Warning("No QR code detected.")
+
+    gr.Text(f"Scanned QR code: {qr_data}")
+
+    _, bounding_box = detect_face(image)
 
     segmentation_mask = segment_face(image, bounding_box)
+
+    segmentation_mask = contract_mask(segmentation_mask * 255, contract_pixels)
 
     # TODO
     # prompt = prompt_from_qr()
@@ -142,9 +122,10 @@ def process_image(image: np.ndarray, prompt: str) -> Tuple[np.ndarray, np.ndarra
 def main():
     webcam = gr.Image(shape=(WIDTH, HEIGHT), source="webcam", mirror_webcam=True)
     prompt = gr.Textbox(lines=2, label="Prompt")
+    contract_pixels = gr.Slider(minimum=0, maximum=50, step=1, value=0, label="Blend (pixels)")
     # webapp = gr.interface.Interface(fn=process_image, inputs=webcam, outputs="image")
-    webapp = gr.interface.Interface(fn=process_image, inputs=[webcam, prompt], outputs="image")
-    webapp.launch()
+    webapp = gr.interface.Interface(fn=process_image, inputs=[webcam, prompt, contract_pixels], outputs="image")
+    webapp.queue().launch()
 
 
 if __name__ == "__main__":
