@@ -6,6 +6,7 @@ import cv2
 import gradio as gr
 import mediapipe as mp
 import numpy as np
+from PIL import Image
 
 # from qr import detect_qr
 from qreader import QReader
@@ -16,6 +17,18 @@ from prompts import CARD_INFO, PROMPTS, QR_MAPPING
 WIDTH, HEIGHT = 640, 640
 
 qrr = QReader()
+
+
+def overlay_mirror_border(image: np.ndarray) -> np.ndarray:
+    # load the mirror png
+    mirror = Image.open("mirror.png")
+    mirror = mirror.resize((512 + 15, 512 + 15))
+
+    # overlay
+    image = Image.fromarray(image)
+    image.paste(mirror, (-8, -8), mask=mirror)
+
+    return np.array(image)
 
 
 def filter_masks_by_bbox(masks: np.ndarray, bbox: List) -> np.ndarray:
@@ -125,15 +138,24 @@ def process_image(image: np.ndarray, supplied_prompt: str, contract_pixels: int)
     print("===========")
     inpainted_image = inpaint_image(image, segmentation_mask, prompt)
 
+    # inpainted_image = overlay_mirror_border(inpainted_image)
+
     if card_info:
-        card_info = f"## {qr_data.capitalize()}\n{card_info}"
+        if isinstance(qr_data, tuple):
+            qr_data = qr_data[0]
+        if qr_data is not None:
+            card_info = f"## {qr_data.capitalize()}\n{card_info}"
 
     return inpainted_image, card_info
 
 
+def set_p():
+    return PROMPTS["scooby-do"][0]
+
+
 def main():
     webcam = gr.Image(shape=(WIDTH, HEIGHT), source="webcam", mirror_webcam=True)
-    supplied_prompt = gr.Textbox(lines=2, label="Prompt")
+    supplied_prompt = gr.Textbox(lines=2, label="Fallback Prompt", value=set_p)
     contract_pixels = gr.Slider(minimum=0, maximum=50, step=1, value=15, label="Blend (pixels)")
     # webapp = gr.interface.Interface(fn=process_image, inputs=webcam, outputs="image")
     webapp = gr.interface.Interface(
@@ -143,7 +165,7 @@ def main():
         css='div {margin-left: auto; margin-right: auto; width: 100%;\
             background-image: url("bg1.jpg"); repeat 0 0;}',
     )
-    webapp.queue(max_size=3).launch()
+    webapp.queue(max_size=3).launch(share=True)
 
 
 if __name__ == "__main__":
