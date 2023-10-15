@@ -141,14 +141,21 @@ def process_image(image: np.ndarray, supplied_prompt: str, contract_pixels: int)
     # inpainted_image = overlay_mirror_border(inpainted_image)
 
     if card_info:
-        card_info = f"## {qr_data.capitalize()}\n{card_info}"
+        if isinstance(qr_data, tuple):
+            qr_data = qr_data[0]
+        if qr_data is not None:
+            card_info = f"## {qr_data.capitalize()}\n{card_info}"
 
     return inpainted_image, card_info
 
 
+def set_p():
+    return PROMPTS["scooby-do"][0]
+
+
 def main():
     webcam = gr.Image(shape=(WIDTH, HEIGHT), source="webcam", mirror_webcam=True)
-    supplied_prompt = gr.Textbox(lines=2, label="Fallback Prompt", value=PROMPTS["scooby-do"][0])
+    supplied_prompt = gr.Textbox(lines=2, label="Fallback Prompt", value=set_p)
     contract_pixels = gr.Slider(minimum=0, maximum=50, step=1, value=15, label="Blend (pixels)")
     # webapp = gr.interface.Interface(fn=process_image, inputs=webcam, outputs="image")
     webapp = gr.interface.Interface(
