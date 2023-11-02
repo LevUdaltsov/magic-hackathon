@@ -9,7 +9,7 @@ PROMPTS = {
     ],
     "priestess": [
         "Magic Altar in the forest, highly detailed, digital painting, artstation, concept art, smooth, sharp focus, illustration, art by artgerm and greg rutkowski and alphonse mucha. Fantastic landscape",
-        "A painting of priestesses worshipping at the jellyfish temple, shrouded in mist, jellyfish god, jellyfish priestess, jellyfish shrine maiden, 8K, illustration, art by Lilia Alvarado, Sophie Anderson, Mark Arian, Bob Byerley, Charlie Bowater, Mark Brooks, Steve Henderson, Justin Gerard, Arthur Hughes, Edward Robert Hughes, Mark Keathley, Victor Nizovtsev, Carlos Shwabe, Ross Tran, WLOP, smoke, undersea temple with fish, cinematic, insanely detailed and intricate, hypermaximalist, elegant, super detailed, award-winning, magenta and crimson and cyan, rainbow accents, iridescence, bioluminescence, mysterious, ancient, ritual, trending in cgsociety, artstation HQ, ornate, elite, haunting, matte painting, beautiful detailed, insanely intricate details, dreamy and ethereal, otherworldly",
+        "A painting of priestesses worshipping at the jellyfish temple, shrouded in mist, jellyfish god, jellyfish priestess, jellyfish shrine maiden, 8K, illustration, art by Lilia Alvarado, Sophie Anderson, Mark Arian, Bob Byerley, Charlie Bowater, Mark Brooks, Steve Henderson, Justin Gerard, Arthur Hughes, Edward Robert Hughes, Mark Keathley, Victor Nizovtsev, Carlos Shwabe, Ross Tran, smoke, undersea temple with fish, insanely detailed and intricate, hypermaximalist",  # , cinematic, insanely detailed and intricate, hypermaximalist, elegant, super detailed, award-winning, magenta and crimson and cyan, rainbow accents, iridescence, bioluminescence, mysterious, ancient, ritual, trending in cgsociety, artstation HQ, ornate, elite, haunting, matte painting, beautiful detailed, insanely intricate details, dreamy and ethereal, otherworldly",
     ],
     "magician": [
         "3 d model of an ethereal colorful blue starry fox peacock character accented in gold, wearing star filled magic imbued mage robes, wearing lots of gold jewelry and gems, set in observatory at night, art by yuji ikehata, background art by miyazaki, realism, resident evil, fully clothed, cgi, gaming",
@@ -19,7 +19,7 @@ PROMPTS = {
     ],
     "scooby-do": [
         "Scooby-do monsters, cartoon hero and villain, in the style of scooby do. Vivid colors, ultra HD, funny, darkopalypse, tiki voodoo swamp"
-    ]
+    ],
 }
 
 QR_MAPPING = {
