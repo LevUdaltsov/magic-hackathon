@@ -18,7 +18,8 @@ WIDTH, HEIGHT = 512, 512
 
 # init
 pipe = StableDiffusionInpaintPipeline.from_pretrained(
-    "runwayml/stable-diffusion-v1-5", use_safetensors=True, safety_checker=None
+    "runwayml/stable-diffusion-inpainting",
+    safety_checker=None,
 )
 pipe = pipe.to("mps")
 # Recommended if your computer has < 64 GB of RAM
@@ -31,6 +32,7 @@ def contract_mask(mask: np.ndarray, contract_pixels: int) -> np.ndarray:
     mask = cv2.dilate(mask, np.ones((2, 2), np.uint8), iterations=contract_pixels)
 
     return mask
+
 
 # segmentation
 def segment_face(image: np.ndarray) -> np.ndarray:
@@ -55,8 +57,7 @@ def process_image(image: np.ndarray, qr_data: str, contract_pixels: int) -> Tupl
     print("CARD:", qr_data)
     print("PROMPT:", prompt)
     print("===========")
-    inpainted_image = pipe(
-        image=image, mask_image=segmentation_mask, prompt=prompt, num_inference_steps=25).images[0]
+    inpainted_image = pipe(image=image, mask_image=segmentation_mask, prompt=prompt, num_inference_steps=25).images[0]
 
     if card_info:
         card_info = f"## {qr_data.capitalize()}\n{card_info}"
