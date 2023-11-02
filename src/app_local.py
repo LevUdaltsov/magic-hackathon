@@ -8,8 +8,11 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import mediapipe as mp
 import numpy as np
+import PIL.Image
+import PIL.ImageOps
 import torch
 from diffusers import StableDiffusionInpaintPipeline
+from diffusers.utils import numpy_to_pil
 from mediapipe.tasks import python as tasks
 
 from prompts import CARD_INFO, PROMPTS, QR_MAPPING
@@ -35,11 +38,12 @@ def contract_mask(mask: np.ndarray, contract_pixels: int) -> np.ndarray:
 
 
 # segmentation
-def segment_face(image: np.ndarray) -> np.ndarray:
+def segment_face(image: PIL.Image) -> np.ndarray:
     mp_selfie = mp.solutions.selfie_segmentation
 
     with mp_selfie.SelfieSegmentation(model_selection=0) as model:
-        res = model.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        image_array = np.asarray(image)
+        res = model.process(cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB))
         background_mask = (res.segmentation_mask < 0.1).astype("uint8")
 
     return background_mask
@@ -49,7 +53,7 @@ def process_image(image: np.ndarray, qr_data: str, contract_pixels: int) -> Tupl
     prompt = random.choice(PROMPTS[QR_MAPPING[qr_data]])
     card_info = CARD_INFO[QR_MAPPING[qr_data]]
 
-    segmentation_mask = segment_face(image)
+    segmentation_mask = segment_face(image_array)
 
     segmentation_mask = contract_mask(segmentation_mask * 255, contract_pixels)
 
@@ -66,7 +70,7 @@ def process_image(image: np.ndarray, qr_data: str, contract_pixels: int) -> Tupl
 
 
 def main():
-    webcam = gr.Image(shape=(WIDTH, HEIGHT), source="webcam", mirror_webcam=True)
+    webcam = gr.Image(shape=(WIDTH, HEIGHT), source="webcam", mirror_webcam=True, type="pil")
     qr_datas = list(CARD_INFO.keys())
     supplied_prompt = gr.Dropdown(qr_datas, label="Card")
     contract_pixels = gr.Slider(minimum=0, maximum=50, step=1, value=15, label="Blend (pixels)")
