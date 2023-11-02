@@ -107,7 +107,7 @@ def main():
     webapp = gr.interface.Interface(
         fn=process_and_submit,
         inputs=[webcam, supplied_prompt, contract_pixels, email, submit_button],
-        outputs=[gr.Image(label="Mirror"), gr.Markdown(label="Card info")],
+        outputs=[gr.Image(label="Mirror"), gr.Markdown(label="Card info"), gr.Textbox(label="sending status")],
         css='div {margin-left: auto; margin-right: auto; width: 100%;\
             background-image: url("bg1.jpg"); repeat 0 0;}',
     )
