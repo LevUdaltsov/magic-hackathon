@@ -39,11 +39,11 @@ def send_email_with_image(email_address: str, image: PIL.Image):
 
     # Convert PIL Image to byte stream
     img_byte_arr = BytesIO()
-    image.save(img_byte_arr, format="JPEG")
+    image.save(img_byte_arr, format="PNG")
     img_byte_arr = img_byte_arr.getvalue()
 
     # Create MIMEImage and add it to the message
-    mime_image = MIMEImage(img_byte_arr, name="mirror_reading.jpg")
+    mime_image = MIMEImage(img_byte_arr, name="mirror_reading.png")
     message.attach(mime_image)
 
     text = message.as_string()

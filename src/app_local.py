@@ -1,19 +1,13 @@
-import math
 import random
-import re
 from typing import Tuple
 
 import cv2
 import gradio as gr
-import matplotlib.image as mpimg
-import matplotlib.pyplot as plt
 import mediapipe as mp
 import numpy as np
 import PIL.Image
 import PIL.ImageOps
-import torch
 from diffusers import StableDiffusionInpaintPipeline
-from diffusers.utils import numpy_to_pil
 from mediapipe.tasks import python as tasks
 
 from email_utils import send_email_with_image
