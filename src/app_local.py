@@ -13,7 +13,7 @@ from email_utils import send_email_with_image
 from prompts import CARD_INFO, PROMPTS, QR_MAPPING
 
 WIDTH, HEIGHT = 512, 512
-DIFFUSION_STEPS = 20
+DIFFUSION_STEPS = 25
 
 css = """
 .app {
