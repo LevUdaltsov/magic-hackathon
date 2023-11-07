@@ -11,11 +11,12 @@ opencv-python = "^4.8.1.78"
 gradio = "^3.47.1"
 matplotlib = "^3.8.0"
 mediapipe = "^0.10.7"
-google-cloud-aiplatform = "^1.35"
 numpy = "^1.25"
 diffusers = "^0.21.4"
 torch = "^2.1.0"
 transformers = "^4.34.1"
+python-dotenv = "^1.0.0"
+accelerate = "^0.24.1"
 
 [build-system]
 requires = ["poetry-core"]
