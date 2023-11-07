@@ -8,12 +8,20 @@ import numpy as np
 import PIL.Image
 import PIL.ImageOps
 from diffusers import StableDiffusionInpaintPipeline
-from mediapipe.tasks import python as tasks
 
 from email_utils import send_email_with_image
 from prompts import CARD_INFO, PROMPTS, QR_MAPPING
 
 WIDTH, HEIGHT = 512, 512
+DIFFUSION_STEPS = 20
+
+css = """
+.app {
+    background-size: cover;
+    background-image: url("https://github.com/LevUdaltsov/magic-hackathon/blob/d11f943593020ffaf1780b0d367046a6ff4704a4/src/bg1.jpg?raw=true");
+    repeat 0 0;
+}
+"""
 
 # Global cache for processed image and data
 cache = {
@@ -37,7 +45,6 @@ def contract_mask(mask: np.ndarray, contract_pixels: int) -> np.ndarray:
     """Contract the mask by `contract_pixels` pixels in each direction."""
     mask = mask.copy()
     mask = cv2.dilate(mask, np.ones((2, 2), np.uint8), iterations=contract_pixels)
-
     return mask
 
 
@@ -65,7 +72,12 @@ def process_image(image: np.ndarray, qr_data: str, contract_pixels: int) -> Tupl
     print("CARD:", qr_data)
     print("PROMPT:", prompt)
     print("===========")
-    inpainted_image = pipe(image=image, mask_image=segmentation_mask, prompt=prompt, num_inference_steps=25).images[0]
+    inpainted_image = pipe(
+        image=image,
+        mask_image=segmentation_mask,
+        prompt=prompt,
+        num_inference_steps=DIFFUSION_STEPS,
+    ).images[0]
 
     if card_info:
         card_info = f"## {qr_data.capitalize()}\n{card_info}"
@@ -90,7 +102,10 @@ def process_and_submit(image, prompt, contract_pixels, email_address, submit):
     # Submit email if checkbox is checked
     email_status = ""
     if submit:
-        email_status = send_email_with_image(email_address, processed_image)
+        try:
+            email_status = send_email_with_image(email_address, processed_image, card_info)
+        except Exception as e:
+            email_status = f"Error: {e}"
 
     return processed_image, card_info, email_status
 
@@ -100,16 +115,13 @@ def main():
     qr_datas = list(CARD_INFO.keys())
     supplied_prompt = gr.Dropdown(qr_datas, label="Card")
     contract_pixels = gr.Slider(minimum=0, maximum=50, step=1, value=15, label="Blend (pixels)")
-
-    email = gr.inputs.Textbox(lines=1, placeholder="Enter your email here...", label="Email")
-    submit_button = gr.inputs.Checkbox(label="Submit Email")
-    # webapp = gr.interface.Interface(fn=process_image, inputs=webcam, outputs="image")
+    email = gr.Textbox(lines=1, placeholder="Enter your email here...", label="Email")
+    submit_button = gr.Checkbox(label="Submit Email")
     webapp = gr.interface.Interface(
         fn=process_and_submit,
         inputs=[webcam, supplied_prompt, contract_pixels, email, submit_button],
-        outputs=[gr.Image(label="Mirror"), gr.Markdown(label="Card info"), gr.Textbox(label="sending status")],
-        css='div {margin-left: auto; margin-right: auto; width: 100%;\
-            background-image: url("bg1.jpg"); repeat 0 0;}',
+        outputs=[gr.Image(label="Mirror"), gr.Markdown(label="Card info"), gr.Textbox(label="Email status")],
+        css=css,
     )
     webapp.queue(max_size=3).launch()
 

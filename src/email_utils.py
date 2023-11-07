@@ -1,7 +1,6 @@
 import os
 import re
 import smtplib
-from email import encoders
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -13,7 +12,7 @@ from dotenv import find_dotenv, load_dotenv
 load_dotenv(find_dotenv())
 
 
-def send_email_with_image(email_address: str, image: PIL.Image):
+def send_email_with_image(email_address: str, image: PIL.Image, card_info: str = None):
     # Remove trailing spaces
     email_address = email_address.strip()
 
@@ -23,7 +22,7 @@ def send_email_with_image(email_address: str, image: PIL.Image):
 
     # Define email parameters
     subject = "Your Mirror Reading"
-    body = "Here is your mirror reading."
+    body = "Here is your mirror reading. \n" + card_info
     sender_email = os.getenv("SENDER_EMAIL")
     password = os.getenv("SENDER_PASSWORD")
     receiver_email = email_address
