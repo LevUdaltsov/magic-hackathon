@@ -1,12 +1,15 @@
 from PIL import Image, ImageDraw, ImageFilter
 
+card_bgs = {
+    card_name: Image.open(f"assets/card_{card_name.lower()}.png")
+    for card_name in ["death", "magician", "priestess", "sun", "world"]
+}
 
 def make_card(img, card_name):
     """
     Make a Tarot card from an image and text.
     """
-    card_bg = "assets/card_{}.png"
-    card = Image.open(card_bg.format(card_name.lower()))
+    card = card_bgs[card_name.lower()]
     card_w = card.size[0]
 
     img = img.resize((410, 410))
@@ -17,7 +20,7 @@ def make_card(img, card_name):
     im_a = Image.new("L", img.size, 0)
     draw = ImageDraw.Draw(im_a)
     draw.rounded_rectangle(((margin, margin), (w - margin, h - margin)), radius=50, fill=255)
-    im_a_blur = im_a.filter(ImageFilter.GaussianBlur(15))
+    im_a_blur = im_a.filter(ImageFilter.GaussianBlur(25))
 
     image = img.copy()
     image.putalpha(im_a_blur)
