@@ -9,6 +9,8 @@ from io import BytesIO
 import PIL.Image
 from dotenv import find_dotenv, load_dotenv
 
+from make_card import make_card
+
 load_dotenv(find_dotenv())
 
 
@@ -22,7 +24,10 @@ def send_email_with_image(email_address: str, image: PIL.Image, card_info: str =
 
     # Define email parameters
     subject = "Your Mirror Reading"
-    body = "Here is your mirror reading. \n" + card_info
+    body = "Here is your mirror reading."
+    if card_info:
+        card_name, card_text = card_info.split("\n")
+        card_name = card_name.replace("#", "").strip()
     sender_email = os.getenv("SENDER_EMAIL")
     password = os.getenv("SENDER_PASSWORD")
     receiver_email = email_address
@@ -44,6 +49,16 @@ def send_email_with_image(email_address: str, image: PIL.Image, card_info: str =
     # Create MIMEImage and add it to the message
     mime_image = MIMEImage(img_byte_arr, name="mirror_reading.png")
     message.attach(mime_image)
+
+    try:
+        card_img = make_card(image, card_name)
+        card_img_byte_arr = BytesIO()
+        card_img.save(card_img_byte_arr, format="PNG")
+        card_img_byte_arr = card_img_byte_arr.getvalue()
+        mime_card_img = MIMEImage(card_img_byte_arr, name="tarot_card.png")
+        message.attach(mime_card_img)
+    except Exception as e:
+        print("Couldn't generate card:", e)
 
     text = message.as_string()
 

@@ -61,8 +61,9 @@ def segment_face(image: PIL.Image) -> np.ndarray:
 
 
 def process_image(image: np.ndarray, qr_data: str, contract_pixels: int) -> Tuple[np.ndarray, np.ndarray]:
-    prompt = random.choice(PROMPTS[QR_MAPPING[qr_data]])
-    card_info = CARD_INFO[QR_MAPPING[qr_data]]
+    card_name = QR_MAPPING[qr_data]
+    prompt = random.choice(PROMPTS[card_name])
+    card_info = CARD_INFO[card_name]
 
     segmentation_mask = segment_face(image)
 
@@ -80,7 +81,7 @@ def process_image(image: np.ndarray, qr_data: str, contract_pixels: int) -> Tupl
     ).images[0]
 
     if card_info:
-        card_info = f"## {qr_data.capitalize()}\n{card_info}"
+        card_info = f"## {card_name.capitalize()}\n{card_info}"
 
     return inpainted_image, card_info
 
