@@ -8,7 +8,6 @@ import numpy as np
 import PIL.Image
 import PIL.ImageOps
 from diffusers import StableDiffusionInpaintPipeline
-from mediapipe.tasks import python as tasks
 
 from email_utils import send_email_with_image
 from prompts import CARD_INFO, PROMPTS, QR_MAPPING
@@ -103,7 +102,6 @@ def main():
 
     email = gr.inputs.Textbox(lines=1, placeholder="Enter your email here...", label="Email")
     submit_button = gr.inputs.Checkbox(label="Submit Email")
-    # webapp = gr.interface.Interface(fn=process_image, inputs=webcam, outputs="image")
     webapp = gr.interface.Interface(
         fn=process_and_submit,
         inputs=[webcam, supplied_prompt, contract_pixels, email, submit_button],
@@ -111,7 +109,7 @@ def main():
         css='div {margin-left: auto; margin-right: auto; width: 100%;\
             background-image: url("bg1.jpg"); repeat 0 0;}',
     )
-    webapp.queue(max_size=3).launch()
+    webapp.queue(max_size=3).launch(share=True)
 
 
 if __name__ == "__main__":
