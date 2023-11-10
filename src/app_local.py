@@ -5,6 +5,7 @@ import cv2
 import gradio as gr
 import mediapipe as mp
 import numpy as np
+import pandas as pd
 import PIL.Image
 import PIL.ImageOps
 from diffusers import StableDiffusionInpaintPipeline
@@ -14,6 +15,7 @@ from prompts import CARD_INFO, PROMPTS, QR_MAPPING
 
 WIDTH, HEIGHT = 512, 512
 DIFFUSION_STEPS = 25
+SEG_METHOD = "face_oval" # "face_oval" or "selfie"
 
 css = """
 .app {
@@ -40,6 +42,23 @@ pipe = pipe.to("mps")
 # Recommended if your computer has < 64 GB of RAM
 pipe.enable_attention_slicing()
 
+# init face oval segmenter
+mp_face_mesh = mp.solutions.face_mesh
+face_oval = mp_face_mesh.FACEMESH_FACE_OVAL
+df = pd.DataFrame(list(face_oval), columns = ["p1", "p2"]) 
+p1 = df.iloc[0]["p1"]
+p2 = df.iloc[0]["p2"]
+ 
+routes_idx = []
+for i in range(0, df.shape[0]):
+    obj = df[df["p1"] == p2]
+    p1 = obj["p1"].values[0]
+    p2 = obj["p2"].values[0]
+     
+    route_idx = []
+    route_idx.append(p1)
+    route_idx.append(p2)
+    routes_idx.append(route_idx)
 
 def contract_mask(mask: np.ndarray, contract_pixels: int) -> np.ndarray:
     """Contract the mask by `contract_pixels` pixels in each direction."""
@@ -50,12 +69,37 @@ def contract_mask(mask: np.ndarray, contract_pixels: int) -> np.ndarray:
 
 # segmentation
 def segment_face(image: PIL.Image) -> np.ndarray:
-    mp_selfie = mp.solutions.selfie_segmentation
+    
+    if SEG_METHOD == "selfie":
+        mp_selfie = mp.solutions.selfie_segmentation
 
-    with mp_selfie.SelfieSegmentation(model_selection=0) as model:
-        image_array = np.asarray(image)
-        res = model.process(cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB))
-        background_mask = (res.segmentation_mask < 0.1).astype("uint8")
+        with mp_selfie.SelfieSegmentation(model_selection=0) as model:
+            image_array = np.asarray(image)
+            res = model.process(cv2.cvtColor(image_array, cv2.COLOR_BGR2RGB))
+            background_mask = (res.segmentation_mask < 0.1).astype("uint8")
+ 
+    elif SEG_METHOD == "face_oval":
+        face_mesh = mp_face_mesh.FaceMesh(static_image_mode=True)
+        img = np.asarray(image)
+        results = face_mesh.process(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+        landmarks = results.multi_face_landmarks[0]
+        
+        routes = []
+        for source_idx, target_idx in routes_idx:
+            source = landmarks.landmark[source_idx]
+            target = landmarks.landmark[target_idx]
+                
+            relative_source = (int(img.shape[1] * source.x), int(img.shape[0] * source.y))
+            relative_target = (int(img.shape[1] * target.x), int(img.shape[0] * target.y))
+            routes.append(relative_source)
+            routes.append(relative_target)
+            
+        background_mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.uint8)
+        cv2.fillConvexPoly(background_mask, np.array(routes), 1)
+        background_mask = 1-background_mask
+        
+    else:
+        raise ValueError("Invalid segmentation method")
 
     return background_mask
 
