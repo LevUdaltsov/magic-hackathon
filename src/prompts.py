@@ -15,7 +15,7 @@ PROMPTS = {
         "3 d model of an ethereal colorful blue starry fox peacock character accented in gold, wearing star filled magic imbued mage robes, wearing lots of gold jewelry and gems, set in observatory at night, art by yuji ikehata, background art by miyazaki, realism, resident evil, fully clothed, cgi, gaming",
     ],
     "world": [
-        "detailed fractal tectonic landscape, in a vast wildflower garden landscape that meets the ocean, by glenn small, by albert bierstadt, photorealism, hyper realism, octane render, unreal engine, volumetric light, depth of field, volumetric clouds, god rays, lens flares, detailed, intricate, twin motion, megascan, high resolution, realistic render",
+        "highly detailed 3d model of a trilobite fossil, background of vast wildflower garden landscape that meets the ocean, detailed fractal tectonic landscape, by glenn small, by albert bierstadt, photorealism, hyper realism, octane render, unreal engine, volumetric light, depth of field, volumetric clouds, god rays, lens flares, detailed, intricate, twin motion, megascan, high resolution, realistic render",
     ],
     "scooby-do": [
         "Scooby-do monsters, cartoon hero and villain, in the style of scooby do. Vivid colors, ultra HD, funny, darkopalypse, tiki voodoo swamp"
