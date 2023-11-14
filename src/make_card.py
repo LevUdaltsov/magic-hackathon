@@ -1,32 +1,26 @@
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image
 
 card_bgs = {
-    card_name: Image.open(f"assets/card_{card_name.lower()}.png")
+    card_name: Image.open(f"./assets/{card_name.lower()}-trans.png", "r")
     for card_name in ["death", "magician", "priestess", "sun", "world"]
 }
 
-def make_card(img, card_name):
+
+def make_card(image: Image.Image, card_name: str) -> Image.Image:
     """
     Make a Tarot card from an image and text.
     """
     card = card_bgs[card_name.lower()]
-    card_w = card.size[0]
+    card_w, card_h = 620, 868
+    card = card.resize((card_w, card_h))
 
-    img = img.resize((410, 410))
+    # Paste image onto black bg
+    im = Image.new(mode="RGB", size=(card_w, card_h))
 
-    # vignette image
-    margin = 40
-    w, h = img.size
-    im_a = Image.new("L", img.size, 0)
-    draw = ImageDraw.Draw(im_a)
-    draw.rounded_rectangle(((margin, margin), (w - margin, h - margin)), radius=50, fill=255)
-    im_a_blur = im_a.filter(ImageFilter.GaussianBlur(25))
+    side_margin = int(card_w / 2 - image.size[0] / 2)
+    im.paste(image, (side_margin, side_margin))
 
-    image = img.copy()
-    image.putalpha(im_a_blur)
+    # finally paste transparent card onto image
+    im.paste(card, (0, 0), card.split()[-1])
 
-    # Paste image onto card
-    side_margin = card_w // 2 - image.size[0] // 2
-    card.paste(image, (side_margin, side_margin - 30), image)
-
-    return card
+    return im
